@@ -7,6 +7,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
+    <RootNamespace>LuaToolsGui</RootNamespace>
     <AssemblyName>Phuongnam</AssemblyName>
     <AssemblyTitle>Phuongnam</AssemblyTitle>
     <Product>Phuongnam</Product>
