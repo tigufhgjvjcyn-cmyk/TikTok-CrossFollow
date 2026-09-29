@@ -1,5 +1,7 @@
-﻿using System.Windows;
+using System;
+using System.Windows;
 using System.Windows.Threading;
+using System.Threading.Tasks;
 using LuaToolsGui.Models;
 using LuaToolsGui.Services;
 using LuaToolsGui.ViewModels;
@@ -223,6 +225,39 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Bắt tất cả lỗi crash ngầm trên Thread giao diện chính (UI Thread)
+        this.DispatcherUnhandledException += (sender, args) =>
+        {
+            MessageBox.Show(
+                $"[Lỗi Giao Diện / UI Thread]:\n{args.Exception.Message}\n\nChi tiết:\n{args.Exception.StackTrace}",
+                "Báo Lỗi Khởi Chạy Ứng Dụng",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+            args.Handled = true; // Ngăn app tự động bị tắt ngầm
+        };
+
+        // Bắt tất cả lỗi crash trên các Thread hệ thống (AppDomain)
+        AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
+        {
+            var ex = args.ExceptionObject as Exception;
+            MessageBox.Show(
+                $"[Lỗi Hệ Thống / AppDomain]:\n{ex?.Message ?? args.ExceptionObject.ToString()}\n\nChi tiết:\n{ex?.StackTrace}",
+                "Lỗi Hệ Thống",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
+        };
+
+        // Bắt lỗi trong các tác vụ chạy bất đồng bộ (Task / Async)
+        TaskScheduler.UnobservedTaskException += (sender, args) =>
+        {
+            MessageBox.Show(
+                $"[Lỗi Bất Đồng Bộ / Task]:\n{args.Exception.Message}",
+                "Báo Lỗi Task Async",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            args.SetObserved();
+        };
+
         base.OnStartup(e);
 
         // Point the shared HTTP handler at the DNS setting before anything makes a request. It calls
